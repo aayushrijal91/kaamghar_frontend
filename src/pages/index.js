@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchQuery } from "@/util";
 import PostCard from "@/Components/PostCard";
 
-function Home({ jobs, meta }) {  
+function Home({ jobs, meta }) {
   const [jobData, setJobData] = useState([]);
   const [openJobPosts, setOpenJobPosts] = useState(0);
 
@@ -27,9 +27,13 @@ function Home({ jobs, meta }) {
 
           <div className="w-2/4">
             <div className="flex flex-col gap-y-3">
-              {jobData.map(job => (
-                <PostCard key={job.id} job={job.attributes} />
-              ))}
+              {
+                (meta.pagination.total === 0) ? (
+                  <p>No posts yet!!</p>
+                ) : jobData.map(job => (
+                  <PostCard key={job.id} job={job.attributes} />
+                ))
+              }
             </div>
           </div>
 
@@ -49,7 +53,7 @@ function Home({ jobs, meta }) {
 export default Home;
 
 export async function getServerSideProps() {
-  const response = await fetchQuery("jobs");
+  const response = await fetchQuery("jobs?populate=*");
 
   return {
     props: {

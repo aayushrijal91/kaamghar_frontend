@@ -5,9 +5,7 @@ import { Provider } from "react-redux";
 import { persistor, store } from "@/store";
 import TimeAgo from "javascript-time-ago";
 import en from 'javascript-time-ago/locale/en.json';
-// import { persistor, store } from './redux/store';
 import { PersistGate } from 'redux-persist/integration/react';
-// import { usePathname } from 'next/navigation';
 TimeAgo.addDefaultLocale(en);
 
 export default function App({ Component, pageProps }) {

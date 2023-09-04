@@ -13,6 +13,7 @@ function Profile() {
     const [address, setAddress] = useState("");
     const [postStatus, setPostStatus] = useState(true);
     const [userData, setUserData] = useState({});
+    const [createPostStatus, setCreatePostStatus] = useState(null);
     const [jobData, setJobData] = useState([]);
 
     // get the next router
@@ -24,10 +25,10 @@ function Profile() {
     useEffect(() => {
         async function fetchData() {
             setUserData(user);
-    
-            const jobData = await fetchQuery(`jobs?filters[user_id][$eq]=${user.id}`);
+
+            const jobData = await fetchQuery(`jobs?populate=*&filters[user_id][$eq]=${user.id}`);
             const sortedData = jobData.data.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
-    
+
             setJobData(sortedData);
         }
 
@@ -39,9 +40,9 @@ function Profile() {
 
         try {
             let data = {
-                "Title": title,
-                "Description": description,
-                "Address": address,
+                "title": title,
+                "description": description,
+                "address": address,
                 "post_status": postStatus,
                 "user_id": userData.id,
                 "username": userData.username
@@ -64,9 +65,16 @@ function Profile() {
                 setTitle("");
                 setDescription("");
                 setAddress("");
+                setCreatePostStatus({
+                    "status": true,
+                    "message": "Post created successfully"
+                });
             }
         } catch (error) {
-            console.log(error);
+            setCreatePostStatus({
+                "status": false,
+                "message": error.message
+            });
         }
     }
 
@@ -88,6 +96,9 @@ function Profile() {
 
                     <div className="w-2/4">
                         <div className="flex flex-col gap-y-3">
+                            {createPostStatus && (
+                                <div className={`${createPostStatus.status ? 'bg-green-500' : 'bg-red-500'} py-2 px-6 text-white rounded-md border border-white`}>{createPostStatus.message}</div>
+                            )}
                             <div className="bg-white border w-full p-5 rounded-lg">
                                 <form onSubmit={handleCreatePost} className="flex gap-y-3 flex-col">
                                     <div>
@@ -119,6 +130,7 @@ function Profile() {
                                             role="switch" />
                                         <label className="pl-4 hover:cursor-pointer text-gray-400 text-sm">Is this post open or closed?</label>
                                     </div>
+
                                     <div>
                                         <textarea
                                             className="border w-full outline-none p-3 rounded-md"
@@ -153,15 +165,3 @@ function Profile() {
 }
 
 export default Profile;
-
-export async function getServerSideProps() {
-    const user_id = 3;
-    const response = await fetchQuery(`jobs?filters[user_id][$eq]=${user_id}`);
-
-    return {
-        props: {
-            jobs: response.data,
-            meta: response.meta
-        }
-    }
-}
