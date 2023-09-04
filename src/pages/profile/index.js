@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from "react";
 import { postQuery, fetchQuery } from "@/util";
 import { useSelector } from "react-redux";
@@ -5,14 +7,13 @@ import { selectUser } from "@/features/userSlice";
 import { useRouter } from "next/router";
 import PostCard from "@/Components/PostCard";
 
-function Profile({ jobs }) {
+function Profile() {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
     const [postStatus, setPostStatus] = useState(true);
     const [userData, setUserData] = useState({});
     const [jobData, setJobData] = useState([]);
-
 
     // get the next router
     const router = useRouter();
@@ -21,14 +22,16 @@ function Profile({ jobs }) {
     const user = useSelector(selectUser);
 
     useEffect(() => {
-        setUserData(user);
+        async function fetchData() {
+            setUserData(user);
+    
+            const jobData = await fetchQuery(`jobs?filters[user_id][$eq]=${user.id}`);
+            const sortedData = jobData.data.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
+    
+            setJobData(sortedData);
+        }
 
-        // const trueJobPostCount = jobs.filter(job => job.attributes.post_status).length;
-        // setOpenJobPosts(trueJobPostCount);
-
-        const sortedData = jobs.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
-
-        setJobData(sortedData);
+        fetchData();
     }, []);
 
     async function handleCreatePost(e) {
