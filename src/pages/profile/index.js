@@ -1,14 +1,18 @@
-import { useState } from "react";
-import { postQuery } from "@/util";
+import { useEffect, useState } from "react";
+import { postQuery, fetchQuery } from "@/util";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/features/userSlice";
 import { useRouter } from "next/router";
+import PostCard from "@/Components/PostCard";
 
-function CreatePost() {
+function Profile({ jobs }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [address, setAddress] = useState("");
     const [postStatus, setPostStatus] = useState(true);
+    const [userData, setUserData] = useState({});
+    const [jobData, setJobData] = useState([]);
+
 
     // get the next router
     const router = useRouter();
@@ -16,7 +20,18 @@ function CreatePost() {
     // get the user from userslice - selectUser selector
     const user = useSelector(selectUser);
 
-    async function handleFormSubmit(e) {
+    useEffect(() => {
+        setUserData(user);
+
+        // const trueJobPostCount = jobs.filter(job => job.attributes.post_status).length;
+        // setOpenJobPosts(trueJobPostCount);
+
+        const sortedData = jobs.sort((a, b) => new Date(b.attributes.createdAt) - new Date(a.attributes.createdAt));
+
+        setJobData(sortedData);
+    }, []);
+
+    async function handleCreatePost(e) {
         e.preventDefault();
 
         try {
@@ -24,7 +39,9 @@ function CreatePost() {
                 "Title": title,
                 "Description": description,
                 "Address": address,
-                "post_status": postStatus
+                "post_status": postStatus,
+                "user_id": userData.id,
+                "username": userData.username
             };
 
             let res = await postQuery('jobs',
@@ -52,7 +69,7 @@ function CreatePost() {
 
     {
         !user &&
-        router.push('/login');
+            router.push('/login');
     }
 
     return (
@@ -69,7 +86,7 @@ function CreatePost() {
                     <div className="w-2/4">
                         <div className="flex flex-col gap-y-3">
                             <div className="bg-white border w-full p-5 rounded-lg">
-                                <form onSubmit={handleFormSubmit} className="flex gap-y-3 flex-col">
+                                <form onSubmit={handleCreatePost} className="flex gap-y-3 flex-col">
                                     <div>
                                         <input
                                             className="border w-full h-[40px] outline-none px-3 rounded-md"
@@ -103,7 +120,7 @@ function CreatePost() {
                                         <textarea
                                             className="border w-full outline-none p-3 rounded-md"
                                             value={description}
-                                            rows="14"
+                                            rows="5"
                                             placeholder="Description"
                                             onChange={e => setDescription(e.target.value)}
                                             required />
@@ -112,6 +129,11 @@ function CreatePost() {
                                     <button type="submit" className="bg-primary text-white h-[50px] rounded-md">Post</button>
                                 </form>
                             </div>
+                            <hr />
+                            <p className="font-bold text-gray-500 text-xl">My Posts</p>
+                            {jobData.map(job => (
+                                <PostCard key={job.id} job={job.attributes} />
+                            ))}
                         </div>
                     </div>
 
@@ -127,4 +149,16 @@ function CreatePost() {
     );
 }
 
-export default CreatePost;
+export default Profile;
+
+export async function getServerSideProps() {
+    const user_id = 3;
+    const response = await fetchQuery(`jobs?filters[user_id][$eq]=${user_id}`);
+
+    return {
+        props: {
+            jobs: response.data,
+            meta: response.meta
+        }
+    }
+}

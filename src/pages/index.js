@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchQuery } from "@/util";
 import PostCard from "@/Components/PostCard";
-import { useSelector } from "react-redux";
-import { selectUser } from "@/features/userSlice";
 
-function Home({ jobs, meta }) {
-  const user = useSelector(selectUser);
-
-  console.log(user);
-  
+function Home({ jobs, meta }) {  
   const [jobData, setJobData] = useState([]);
   const [openJobPosts, setOpenJobPosts] = useState(0);
 

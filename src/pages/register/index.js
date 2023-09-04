@@ -1,59 +1,43 @@
-import { login } from "@/features/userSlice";
-import { useRouter } from "next/router";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
-function Login() {
+function Register() {
     const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const dispatch = useDispatch();
     const router = useRouter();
 
     async function handleFormSubmit(e) {
         e.preventDefault();
 
-        try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/local`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Access-Control-Allow-Origin": "*",
-                    },
-                    body: JSON.stringify({
-                        "identifier": username,
-                        "password": password
-                    })
-                });
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/local/register`,
+            {
+                method: "POST",
+                headers: {
+                    "Accept": 'application/json',
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                body: JSON.stringify({
+                    "username": username,
+                    "email": email,
+                    "password": password
+                })
+            });
 
-            if (!res.ok) {
-                // Check if the response status code indicates an authentication failure
-                if (res.status === 401 || res.status === 403 || res.status === 400) {
-                    throw new Error('Authentication failed');
-                } else {
-                    // Handle other HTTP errors here
-                    throw new Error('Failed to fetch data');
-                }
+        if (!res.ok) {
+            // Check if the response status code indicates an authentication failure
+            if (res.status === 401 || res.status === 403 || res.status === 400) {
+                throw new Error('Authentication failed');
             } else {
-                const user = await res.json();
-
-                dispatch(login({
-                    jwt: user.jwt,
-                    id: user.user.id,
-                    username: user.user.username,
-                    email: user.user.email,
-                    createdAt: user.user.createdAt,
-                    updatedAt: user.user.updatedAt,
-                    confirmed: user.user.confirmed,
-                    blocked: user.user.blocked,
-                    provider: user.user.provider,
-                }));
-
-                router.push('/profile');
+                // Handle other HTTP errors here
+                throw new Error('Failed to fetch data');
             }
-        } catch (e) {
-            alert(`Login error: ${e.message}`);
+        } else {
+            // const user = await res.json();
+
+            router.push('/login');
         }
     }
 
@@ -77,23 +61,32 @@ function Login() {
                                     <div>
                                         <input
                                             className="border w-full h-[40px] outline-none px-3 rounded-md"
+                                            type="email"
+                                            value={email}
+                                            placeholder="Email"
+                                            onChange={e => setEmail(e.target.value)}
+                                            required />
+                                    </div>
+                                    <div>
+                                        <input
+                                            className="border w-full h-[40px] outline-none px-3 rounded-md"
                                             type="password"
                                             value={password}
                                             placeholder="Password"
                                             onChange={e => setPassword(e.target.value)}
                                             required />
                                     </div>
-                                    <button type="submit" className="bg-primary text-white h-[50px] rounded-md">Login</button>
+                                    <button type="submit" className="bg-primary text-white h-[50px] rounded-md">Register</button>
                                 </form>
                             </div>
 
-                            <p className="text-center text-gray-400 font-bold">If you haven't signed up yet, <Link href="/register" className="text-sky-500">Register Here</Link></p>
+                            <p className="text-center text-gray-400 font-bold">If you have already signed up, <Link href="/login" className="text-sky-500">Login</Link></p>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
-    );
+    )
 }
 
-export default Login;
+export default Register;

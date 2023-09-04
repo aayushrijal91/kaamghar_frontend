@@ -8,7 +8,7 @@ function PostCard({ job }) {
                 <div className="flex-1">
                     <p className="font-bold text-lg">{job.Title}</p>
                     <div className="text-xs text-gray-500 flex gap-x-1 items-center">
-                        {job.Address}<span> · </span> Job <span> · </span> <ReactTimeAgo date={Date.parse(job.createdAt)} locale="en" />
+                        {job.username}<span> · </span>{job.Address}<span> · </span> Job <span> · </span> <ReactTimeAgo date={Date.parse(job.createdAt)} locale="en" />
                     </div>
                 </div>
                 <div className="w-fit">
